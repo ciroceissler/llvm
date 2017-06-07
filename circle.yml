@@ -18,5 +18,7 @@ dependencies:
 test:
   override:
     - mkdir build
-    - cd build && cmake ..  -DLLVM_TARGETS_TO_BUILD="X86" -DCMAKE_BUILD_TYPE=Release 
+    - cd build && cmake ..  -DLLVM_TARGETS_TO_BUILD="X86" -DCMAKE_BUILD_TYPE=Release
     - cd build && make
+  post:
+    - cd build && make check-llvm
