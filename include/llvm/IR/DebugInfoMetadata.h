@@ -710,37 +710,45 @@ class DIDerivedType : public DIType {
   friend class LLVMContextImpl;
   friend class MDNode;
 
+  /// \brief The DWARF address space of the memory pointed to or referenced by a
+  /// pointer or reference type respectively.
+  Optional<unsigned> DWARFAddressSpace;
+
   DIDerivedType(LLVMContext &C, StorageType Storage, unsigned Tag,
                 unsigned Line, uint64_t SizeInBits, uint32_t AlignInBits,
-                uint64_t OffsetInBits, DIFlags Flags, ArrayRef<Metadata *> Ops)
+                uint64_t OffsetInBits, Optional<unsigned> DWARFAddressSpace,
+                DIFlags Flags, ArrayRef<Metadata *> Ops)
       : DIType(C, DIDerivedTypeKind, Storage, Tag, Line, SizeInBits,
-               AlignInBits, OffsetInBits, Flags, Ops) {}
+               AlignInBits, OffsetInBits, Flags, Ops),
+        DWARFAddressSpace(DWARFAddressSpace) {}
   ~DIDerivedType() = default;
 
   static DIDerivedType *getImpl(LLVMContext &Context, unsigned Tag,
                                 StringRef Name, DIFile *File, unsigned Line,
                                 DIScopeRef Scope, DITypeRef BaseType,
                                 uint64_t SizeInBits, uint32_t AlignInBits,
-                                uint64_t OffsetInBits, DIFlags Flags,
-                                Metadata *ExtraData, StorageType Storage,
-                                bool ShouldCreate = true) {
+                                uint64_t OffsetInBits,
+                                Optional<unsigned> DWARFAddressSpace,
+                                DIFlags Flags, Metadata *ExtraData,
+                                StorageType Storage, bool ShouldCreate = true) {
     return getImpl(Context, Tag, getCanonicalMDString(Context, Name), File,
                    Line, Scope, BaseType, SizeInBits, AlignInBits, OffsetInBits,
-                   Flags, ExtraData, Storage, ShouldCreate);
+                   DWARFAddressSpace, Flags, ExtraData, Storage, ShouldCreate);
   }
   static DIDerivedType *getImpl(LLVMContext &Context, unsigned Tag,
                                 MDString *Name, Metadata *File, unsigned Line,
                                 Metadata *Scope, Metadata *BaseType,
                                 uint64_t SizeInBits, uint32_t AlignInBits,
-                                uint64_t OffsetInBits, DIFlags Flags,
-                                Metadata *ExtraData, StorageType Storage,
-                                bool ShouldCreate = true);
+                                uint64_t OffsetInBits,
+                                Optional<unsigned> DWARFAddressSpace,
+                                DIFlags Flags, Metadata *ExtraData,
+                                StorageType Storage, bool ShouldCreate = true);
 
   TempDIDerivedType cloneImpl() const {
     return getTemporary(getContext(), getTag(), getName(), getFile(), getLine(),
                         getScope(), getBaseType(), getSizeInBits(),
-                        getAlignInBits(), getOffsetInBits(), getFlags(),
-                        getExtraData());
+                        getAlignInBits(), getOffsetInBits(),
+                        getDWARFAddressSpace(), getFlags(), getExtraData());
   }
 
 public:
@@ -748,23 +756,31 @@ public:
                     (unsigned Tag, MDString *Name, Metadata *File,
                      unsigned Line, Metadata *Scope, Metadata *BaseType,
                      uint64_t SizeInBits, uint32_t AlignInBits,
-                     uint64_t OffsetInBits, DIFlags Flags,
+                     uint64_t OffsetInBits,
+                     Optional<unsigned> DWARFAddressSpace, DIFlags Flags,
                      Metadata *ExtraData = nullptr),
                     (Tag, Name, File, Line, Scope, BaseType, SizeInBits,
-                     AlignInBits, OffsetInBits, Flags, ExtraData))
+                     AlignInBits, OffsetInBits, DWARFAddressSpace, Flags,
+                     ExtraData))
   DEFINE_MDNODE_GET(DIDerivedType,
                     (unsigned Tag, StringRef Name, DIFile *File, unsigned Line,
                      DIScopeRef Scope, DITypeRef BaseType, uint64_t SizeInBits,
                      uint32_t AlignInBits, uint64_t OffsetInBits,
-                     DIFlags Flags, Metadata *ExtraData = nullptr),
+                     Optional<unsigned> DWARFAddressSpace, DIFlags Flags,
+                     Metadata *ExtraData = nullptr),
                     (Tag, Name, File, Line, Scope, BaseType, SizeInBits,
-                     AlignInBits, OffsetInBits, Flags, ExtraData))
+                     AlignInBits, OffsetInBits, DWARFAddressSpace, Flags,
+                     ExtraData))
 
   TempDIDerivedType clone() const { return cloneImpl(); }
 
-  //// Get the base type this is derived from.
+  /// Get the base type this is derived from.
   DITypeRef getBaseType() const { return DITypeRef(getRawBaseType()); }
   Metadata *getRawBaseType() const { return getOperand(3); }
+
+  /// \returns The DWARF address space of the memory pointed to or referenced by
+  /// a pointer or reference type respectively.
+  Optional<unsigned> getDWARFAddressSpace() const { return DWARFAddressSpace; }
 
   /// Get extra data associated with this derived type.
   ///
@@ -1402,14 +1418,14 @@ class DISubprogram : public DILocalScope {
           unsigned VirtualIndex, int ThisAdjustment, DIFlags Flags,
           bool IsOptimized, DICompileUnit *Unit,
           DITemplateParameterArray TemplateParams, DISubprogram *Declaration,
-          DILocalVariableArray Variables, StorageType Storage,
-          bool ShouldCreate = true) {
+          DILocalVariableArray Variables, DITypeArray ThrownTypes,
+          StorageType Storage, bool ShouldCreate = true) {
     return getImpl(Context, Scope, getCanonicalMDString(Context, Name),
                    getCanonicalMDString(Context, LinkageName), File, Line, Type,
                    IsLocalToUnit, IsDefinition, ScopeLine, ContainingType,
                    Virtuality, VirtualIndex, ThisAdjustment, Flags, IsOptimized,
                    Unit, TemplateParams.get(), Declaration, Variables.get(),
-                   Storage, ShouldCreate);
+                   ThrownTypes.get(), Storage, ShouldCreate);
   }
   static DISubprogram *
   getImpl(LLVMContext &Context, Metadata *Scope, MDString *Name,
@@ -1418,15 +1434,16 @@ class DISubprogram : public DILocalScope {
           Metadata *ContainingType, unsigned Virtuality, unsigned VirtualIndex,
           int ThisAdjustment, DIFlags Flags, bool IsOptimized, Metadata *Unit,
           Metadata *TemplateParams, Metadata *Declaration, Metadata *Variables,
-          StorageType Storage, bool ShouldCreate = true);
+          Metadata *ThrownTypes, StorageType Storage, bool ShouldCreate = true);
 
   TempDISubprogram cloneImpl() const {
-    return getTemporary(
-        getContext(), getScope(), getName(), getLinkageName(), getFile(),
-        getLine(), getType(), isLocalToUnit(), isDefinition(), getScopeLine(),
-        getContainingType(), getVirtuality(), getVirtualIndex(),
-        getThisAdjustment(), getFlags(), isOptimized(), getUnit(),
-        getTemplateParams(), getDeclaration(), getVariables());
+    return getTemporary(getContext(), getScope(), getName(), getLinkageName(),
+                        getFile(), getLine(), getType(), isLocalToUnit(),
+                        isDefinition(), getScopeLine(), getContainingType(),
+                        getVirtuality(), getVirtualIndex(), getThisAdjustment(),
+                        getFlags(), isOptimized(), getUnit(),
+                        getTemplateParams(), getDeclaration(), getVariables(),
+                        getThrownTypes());
   }
 
 public:
@@ -1439,11 +1456,12 @@ public:
                      bool IsOptimized, DICompileUnit *Unit,
                      DITemplateParameterArray TemplateParams = nullptr,
                      DISubprogram *Declaration = nullptr,
-                     DILocalVariableArray Variables = nullptr),
+                     DILocalVariableArray Variables = nullptr,
+                     DITypeArray ThrownTypes = nullptr),
                     (Scope, Name, LinkageName, File, Line, Type, IsLocalToUnit,
                      IsDefinition, ScopeLine, ContainingType, Virtuality,
                      VirtualIndex, ThisAdjustment, Flags, IsOptimized, Unit,
-                     TemplateParams, Declaration, Variables))
+                     TemplateParams, Declaration, Variables, ThrownTypes))
   DEFINE_MDNODE_GET(
       DISubprogram,
       (Metadata * Scope, MDString *Name, MDString *LinkageName, Metadata *File,
@@ -1451,10 +1469,12 @@ public:
        unsigned ScopeLine, Metadata *ContainingType, unsigned Virtuality,
        unsigned VirtualIndex, int ThisAdjustment, DIFlags Flags,
        bool IsOptimized, Metadata *Unit, Metadata *TemplateParams = nullptr,
-       Metadata *Declaration = nullptr, Metadata *Variables = nullptr),
+       Metadata *Declaration = nullptr, Metadata *Variables = nullptr,
+       Metadata *ThrownTypes = nullptr),
       (Scope, Name, LinkageName, File, Line, Type, IsLocalToUnit, IsDefinition,
        ScopeLine, ContainingType, Virtuality, VirtualIndex, ThisAdjustment,
-       Flags, IsOptimized, Unit, TemplateParams, Declaration, Variables))
+       Flags, IsOptimized, Unit, TemplateParams, Declaration, Variables,
+       ThrownTypes))
 
   TempDISubprogram clone() const { return cloneImpl(); }
 
@@ -1519,9 +1539,7 @@ public:
   DICompileUnit *getUnit() const {
     return cast_or_null<DICompileUnit>(getRawUnit());
   }
-  void replaceUnit(DICompileUnit *CU) {
-    replaceOperandWith(7, CU);
-  }
+  void replaceUnit(DICompileUnit *CU) { replaceOperandWith(7, CU); }
   DITemplateParameterArray getTemplateParams() const {
     return cast_or_null<MDTuple>(getRawTemplateParams());
   }
@@ -1531,6 +1549,9 @@ public:
   DILocalVariableArray getVariables() const {
     return cast_or_null<MDTuple>(getRawVariables());
   }
+  DITypeArray getThrownTypes() const {
+    return cast_or_null<MDTuple>(getRawThrownTypes());
+  }
 
   Metadata *getRawScope() const { return getOperand(1); }
   Metadata *getRawType() const { return getOperand(5); }
@@ -1539,6 +1560,7 @@ public:
   Metadata *getRawTemplateParams() const { return getOperand(8); }
   Metadata *getRawDeclaration() const { return getOperand(9); }
   Metadata *getRawVariables() const { return getOperand(10); }
+  Metadata *getRawThrownTypes() const { return getOperand(11); }
 
   /// Check if this subprogram describes the given function.
   ///

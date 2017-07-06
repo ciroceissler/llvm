@@ -656,6 +656,14 @@ void DwarfUnit::addTemplateParams(DIE &Buffer, DINodeArray TParams) {
   }
 }
 
+/// Add thrown types.
+void DwarfUnit::addThrownTypes(DIE &Die, DINodeArray ThrownTypes) {
+  for (const auto *Ty : ThrownTypes) {
+    DIE &TT = createAndAddDIE(dwarf::DW_TAG_thrown_type, Die);
+    addType(TT, cast<DIType>(Ty));
+  }
+}
+
 DIE *DwarfUnit::getOrCreateContextDIE(const DIScope *Context) {
   if (!Context || isa<DIFile>(Context))
     return &getUnitDie();
@@ -839,6 +847,13 @@ void DwarfUnit::constructTypeDIE(DIE &Buffer, const DIDerivedType *DTy) {
   // Add source line info if available and TyDesc is not a forward declaration.
   if (!DTy->isForwardDecl())
     addSourceLine(Buffer, DTy);
+
+  // If DWARF address space value is other than None, add it for pointer and
+  // reference types as DW_AT_address_class.
+  if (DTy->getDWARFAddressSpace() && (Tag == dwarf::DW_TAG_pointer_type ||
+                                      Tag == dwarf::DW_TAG_reference_type))
+    addUInt(Buffer, dwarf::DW_AT_address_class, dwarf::DW_FORM_data4,
+            DTy->getDWARFAddressSpace().getValue());
 }
 
 void DwarfUnit::constructSubprogramArguments(DIE &Buffer, DITypeRefArray Args) {
@@ -1238,6 +1253,8 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
     // be handled while processing variables.
     constructSubprogramArguments(SPDie, Args);
   }
+
+  addThrownTypes(SPDie, SP->getThrownTypes());
 
   if (SP->isArtificial())
     addFlag(SPDie, dwarf::DW_AT_artificial);

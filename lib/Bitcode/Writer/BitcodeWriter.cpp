@@ -1474,6 +1474,13 @@ void ModuleBitcodeWriter::writeDIDerivedType(const DIDerivedType *N,
   Record.push_back(N->getFlags());
   Record.push_back(VE.getMetadataOrNullID(N->getExtraData()));
 
+  // DWARF address space is encoded as N->getDWARFAddressSpace() + 1. 0 means
+  // that there is no DWARF address space associated with DIDerivedType.
+  if (const auto &DWARFAddressSpace = N->getDWARFAddressSpace())
+    Record.push_back(*DWARFAddressSpace + 1);
+  else
+    Record.push_back(0);
+
   Stream.EmitRecord(bitc::METADATA_DERIVED_TYPE, Record, Abbrev);
   Record.clear();
 }
@@ -1579,6 +1586,7 @@ void ModuleBitcodeWriter::writeDISubprogram(const DISubprogram *N,
   Record.push_back(VE.getMetadataOrNullID(N->getDeclaration()));
   Record.push_back(VE.getMetadataOrNullID(N->getVariables().get()));
   Record.push_back(N->getThisAdjustment());
+  Record.push_back(VE.getMetadataOrNullID(N->getThrownTypes().get()));
 
   Stream.EmitRecord(bitc::METADATA_SUBPROGRAM, Record, Abbrev);
   Record.clear();

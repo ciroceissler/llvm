@@ -702,8 +702,14 @@ Error MetadataLoader::MetadataLoaderImpl::parseOneMetadata(
     break;
   }
   case bitc::METADATA_DERIVED_TYPE: {
-    if (Record.size() != 12)
+    if (Record.size() < 12 || Record.size() > 13)
       return error("Invalid record");
+
+    // DWARF address space is encoded as N->getDWARFAddressSpace() + 1. 0 means
+    // that there is no DWARF address space associated with DIDerivedType.
+    Optional<unsigned> DWARFAddressSpace;
+    if (Record.size() > 12 && Record[12])
+      DWARFAddressSpace = Record[12] - 1;
 
     IsDistinct = Record[0];
     DINode::DIFlags Flags = static_cast<DINode::DIFlags>(Record[10]);
@@ -713,7 +719,8 @@ Error MetadataLoader::MetadataLoaderImpl::parseOneMetadata(
                          getMDOrNull(Record[3]), Record[4],
                          getDITypeRefOrNull(Record[5]),
                          getDITypeRefOrNull(Record[6]), Record[7], Record[8],
-                         Record[9], Flags, getDITypeRefOrNull(Record[11]))),
+                         Record[9], DWARFAddressSpace, Flags,
+                         getDITypeRefOrNull(Record[11]))),
         NextMetadataNo++);
     break;
   }
@@ -853,7 +860,7 @@ Error MetadataLoader::MetadataLoaderImpl::parseOneMetadata(
     break;
   }
   case bitc::METADATA_SUBPROGRAM: {
-    if (Record.size() < 18 || Record.size() > 20)
+    if (Record.size() < 18 || Record.size() > 21)
       return error("Invalid record");
 
     IsDistinct =
@@ -869,29 +876,31 @@ Error MetadataLoader::MetadataLoaderImpl::parseOneMetadata(
     unsigned Offset = Record.size() >= 19 ? 1 : 0;
     bool HasFn = Offset && !HasUnit;
     bool HasThisAdj = Record.size() >= 20;
+    bool HasThrownTypes = Record.size() >= 21;
     DISubprogram *SP = GET_OR_DISTINCT(
-        DISubprogram, (Context,
-                       getDITypeRefOrNull(Record[1]),          // scope
-                       getMDString(Record[2]),                 // name
-                       getMDString(Record[3]),                 // linkageName
-                       getMDOrNull(Record[4]),                 // file
-                       Record[5],                              // line
-                       getMDOrNull(Record[6]),                 // type
-                       Record[7],                              // isLocal
-                       Record[8],                              // isDefinition
-                       Record[9],                              // scopeLine
-                       getDITypeRefOrNull(Record[10]),         // containingType
-                       Record[11],                             // virtuality
-                       Record[12],                             // virtualIndex
-                       HasThisAdj ? Record[19] : 0,            // thisAdjustment
-                       static_cast<DINode::DIFlags>(Record[13] // flags
-                                                    ),
-                       Record[14],                       // isOptimized
-                       HasUnit ? CUorFn : nullptr,       // unit
-                       getMDOrNull(Record[15 + Offset]), // templateParams
-                       getMDOrNull(Record[16 + Offset]), // declaration
-                       getMDOrNull(Record[17 + Offset])  // variables
-                       ));
+        DISubprogram,
+        (Context,
+         getDITypeRefOrNull(Record[1]),                     // scope
+         getMDString(Record[2]),                            // name
+         getMDString(Record[3]),                            // linkageName
+         getMDOrNull(Record[4]),                            // file
+         Record[5],                                         // line
+         getMDOrNull(Record[6]),                            // type
+         Record[7],                                         // isLocal
+         Record[8],                                         // isDefinition
+         Record[9],                                         // scopeLine
+         getDITypeRefOrNull(Record[10]),                    // containingType
+         Record[11],                                        // virtuality
+         Record[12],                                        // virtualIndex
+         HasThisAdj ? Record[19] : 0,                       // thisAdjustment
+         static_cast<DINode::DIFlags>(Record[13]),          // flags
+         Record[14],                                        // isOptimized
+         HasUnit ? CUorFn : nullptr,                        // unit
+         getMDOrNull(Record[15 + Offset]),                  // templateParams
+         getMDOrNull(Record[16 + Offset]),                  // declaration
+         getMDOrNull(Record[17 + Offset]),                  // variables
+         HasThrownTypes ? getMDOrNull(Record[20]) : nullptr // thrownTypes
+         ));
     MetadataList.assignValue(SP, NextMetadataNo++);
 
     // Upgrade sp->function mapping to function->sp mapping.

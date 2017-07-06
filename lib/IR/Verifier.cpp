@@ -900,6 +900,13 @@ void Verifier::visitDIDerivedType(const DIDerivedType &N) {
   AssertDI(isScope(N.getRawScope()), "invalid scope", &N, N.getRawScope());
   AssertDI(isType(N.getRawBaseType()), "invalid base type", &N,
            N.getRawBaseType());
+
+  if (N.getDWARFAddressSpace()) {
+    AssertDI(N.getTag() == dwarf::DW_TAG_pointer_type ||
+                 N.getTag() == dwarf::DW_TAG_reference_type,
+             "DWARF address space only applies to pointer or reference types",
+             &N);
+  }
 }
 
 static bool hasConflictingReferenceFlags(unsigned Flags) {
@@ -1053,6 +1060,14 @@ void Verifier::visitDISubprogram(const DISubprogram &N) {
   } else {
     // Subprogram declarations (part of the type hierarchy).
     AssertDI(!Unit, "subprogram declarations must not have a compile unit", &N);
+  }
+
+  if (auto *RawThrownTypes = N.getRawThrownTypes()) {
+    auto *ThrownTypes = dyn_cast<MDTuple>(RawThrownTypes);
+    AssertDI(ThrownTypes, "invalid thrown types list", &N, RawThrownTypes);
+    for (Metadata *Op : ThrownTypes->operands())
+      AssertDI(Op && isa<DIType>(Op), "invalid thrown type", &N, ThrownTypes,
+               Op);
   }
 }
 
