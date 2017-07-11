@@ -77,6 +77,7 @@ public:
     x86,            // X86: i[3-9]86
     x86_64,         // X86-64: amd64, x86_64
     smartnic,       // SmartNIC: dummy arch to map for fpga
+    harp,           // Intel Harp: dummy arch to map for fpga
     xcore,          // XCore: xcore
     nvptx,          // NVPTX: 32-bit
     nvptx64,        // NVPTX: 64-bit
@@ -608,6 +609,11 @@ public:
   /// Tests whether the target is SmartNIC.
   bool isSmartNIC() const {
     return getArch() == Triple::smartnic;
+  }
+
+  /// Tests whether the target is Harp.
+  bool isHarp() const {
+    return getArch() == Triple::harp;
   }
 
   /// Tests wether the target supports comdat
