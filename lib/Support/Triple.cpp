@@ -62,6 +62,7 @@ StringRef Triple::getArchTypeName(ArchType Kind) {
   case amdil64:        return "amdil64";
   case hsail:          return "hsail";
   case hsail64:        return "hsail64";
+  case opencl:         return "opencl";
   case spir:           return "spir";
   case spir64:         return "spir64";
   case kalimba:        return "kalimba";
@@ -134,6 +135,8 @@ StringRef Triple::getArchTypePrefix(ArchType Kind) {
 
   case hsail:
   case hsail64:     return "hsail";
+
+  case opencl:      return "opencl";
 
   case spir:
   case spir64:      return "spir";
@@ -296,6 +299,7 @@ Triple::ArchType Triple::getArchTypeForLLVMName(StringRef Name) {
     .Case("amdil64", amdil64)
     .Case("hsail", hsail)
     .Case("hsail64", hsail64)
+    .Case("opencl", opencl)
     .Case("spir", spir)
     .Case("spir64", spir64)
     .Case("kalimba", kalimba)
@@ -412,6 +416,7 @@ static Triple::ArchType parseArch(StringRef ArchName) {
     .Case("amdil64", Triple::amdil64)
     .Case("hsail", Triple::hsail)
     .Case("hsail64", Triple::hsail64)
+    .Case("opencl", Triple::opencl)
     .Case("spir", Triple::spir)
     .Case("spir64", Triple::spir64)
     .StartsWith("kalimba", Triple::kalimba)
@@ -642,6 +647,7 @@ static Triple::ObjectFormatType getDefaultFormat(const Triple &T) {
   case Triple::sparc:
   case Triple::sparcel:
   case Triple::sparcv9:
+  case Triple::opencl:
   case Triple::spir:
   case Triple::spir64:
   case Triple::systemz:
@@ -1201,6 +1207,7 @@ static unsigned getArchPointerBitWidth(llvm::Triple::ArchType Arch) {
   case llvm::Triple::harp:
   case llvm::Triple::sparcv9:
   case llvm::Triple::systemz:
+  case llvm::Triple::opencl:
   case llvm::Triple::x86_64:
   case llvm::Triple::amdil64:
   case llvm::Triple::hsail64:
@@ -1236,6 +1243,7 @@ Triple Triple::get32BitArchVariant() const {
   case Triple::systemz:
   case Triple::smartnic:
   case Triple::harp:
+  case Triple::opencl:
   case Triple::ppc64le:
     T.setArch(UnknownArch);
     break;
@@ -1314,6 +1322,7 @@ Triple Triple::get64BitArchVariant() const {
   case Triple::amdil64:
   case Triple::amdgcn:
   case Triple::hsail64:
+  case Triple::opencl:
   case Triple::spir64:
   case Triple::mips64:
   case Triple::mips64el:
@@ -1376,6 +1385,7 @@ Triple Triple::getBigEndianArchVariant() const {
   case Triple::riscv32:
   case Triple::riscv64:
   case Triple::shave:
+  case Triple::opencl:
   case Triple::spir64:
   case Triple::spir:
   case Triple::wasm32:
@@ -1468,6 +1478,7 @@ bool Triple::isLittleEndian() const {
   case Triple::smartnic:
   case Triple::harp:
   case Triple::sparcel:
+  case Triple::opencl:
   case Triple::spir64:
   case Triple::spir:
   case Triple::thumb:
