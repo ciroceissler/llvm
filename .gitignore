@@ -38,6 +38,7 @@ cscope.out
 autoconf/aclocal.m4
 autoconf/autom4te.cache
 /compile_commands.json
+CMakeLists.txt.user
 
 #==============================================================================#
 # Directories to ignore (do not add trailing '/'s, they skip symlinks).
@@ -64,6 +65,7 @@ tools/avrlit
 docs/_build
 # VSCode config files.
 .vscode
+build
 
 #==============================================================================#
 # Files created in tree by the Go bindings.
