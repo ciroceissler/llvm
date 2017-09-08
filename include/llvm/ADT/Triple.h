@@ -627,6 +627,12 @@ public:
     return getArch() == Triple::harp;
   }
 
+  /// Tests whether the target is an FPGA.
+  bool isFPGA() const {
+    return getArch() == Triple::smartnic ||
+           getArch() == Triple::harp;
+  }
+
   /// Tests wether the target supports comdat
   bool supportsCOMDAT() const { return !isOSBinFormatMachO(); }
 
