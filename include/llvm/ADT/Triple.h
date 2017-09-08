@@ -607,6 +607,16 @@ public:
     return getArch() == Triple::nvptx || getArch() == Triple::nvptx64;
   }
 
+  /// Tests whether the target is OpenCL
+  bool isOpenCL() const {
+    return getArch() == Triple::opencl;
+  }
+
+  /// Tests whether the target is SPIR (32- or 64-bit)
+  bool isSPIR() const {
+    return getArch() == Triple::spir || getArch() == Triple::spir64;
+  }
+
   /// Tests whether the target is SmartNIC.
   bool isSmartNIC() const {
     return getArch() == Triple::smartnic;
