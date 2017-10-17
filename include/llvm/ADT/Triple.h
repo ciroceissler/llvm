@@ -196,6 +196,7 @@ public:
     MuslEABIHF,
 
     Spark,
+    MPI,
     MSVC,
     Itanium,
     Cygnus,
@@ -632,6 +633,11 @@ public:
   /// Tests whether the target is using Apache Spark environment.
   bool isSparkEnvironment() const {
     return getEnvironment() == Triple::Spark;
+  }
+
+  /// Tests whether the target is using MPI environment.
+  bool isMPIEnvironment() const {
+    return getEnvironment() == Triple::MPI;
   }
 
   /// Tests wether the target supports comdat
