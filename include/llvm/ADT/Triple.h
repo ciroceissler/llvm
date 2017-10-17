@@ -195,6 +195,7 @@ public:
     MuslEABI,
     MuslEABIHF,
 
+    Spark,
     MSVC,
     Itanium,
     Cygnus,
@@ -626,6 +627,11 @@ public:
   bool isFPGA() const {
     return getArch() == Triple::smartnic ||
            getArch() == Triple::harp;
+  }
+
+  /// Tests whether the target is using Apache Spark environment.
+  bool isSparkEnvironment() const {
+    return getEnvironment() == Triple::Spark;
   }
 
   /// Tests wether the target supports comdat

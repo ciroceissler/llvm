@@ -230,6 +230,7 @@ StringRef Triple::getEnvironmentTypeName(EnvironmentType Kind) {
   case MSVC: return "msvc";
   case Itanium: return "itanium";
   case Cygnus: return "cygnus";
+  case Spark: return "spark";
   case AMDOpenCL: return "amdopencl";
   case CoreCLR: return "coreclr";
   case OpenCL: return "opencl";
@@ -512,6 +513,7 @@ static Triple::EnvironmentType parseEnvironment(StringRef EnvironmentName) {
     .StartsWith("msvc", Triple::MSVC)
     .StartsWith("itanium", Triple::Itanium)
     .StartsWith("cygnus", Triple::Cygnus)
+    .StartsWith("spark", Triple::Spark)
     .StartsWith("amdopencl", Triple::AMDOpenCL)
     .StartsWith("coreclr", Triple::CoreCLR)
     .StartsWith("opencl", Triple::OpenCL)
