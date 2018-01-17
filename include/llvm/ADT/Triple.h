@@ -78,6 +78,7 @@ public:
     x86_64,         // X86-64: amd64, x86_64
     smartnic,       // SmartNIC: dummy arch to map for fpga
     harp,           // Intel Harp: dummy arch to map for fpga
+    harpsim,        // Intel Harp Simulation: dummy arch to map for simulation
     xcore,          // XCore: xcore
     nvptx,          // NVPTX: 32-bit
     nvptx64,        // NVPTX: 64-bit
@@ -195,6 +196,8 @@ public:
     MuslEABI,
     MuslEABIHF,
 
+    Spark,
+    MPI,
     MSVC,
     Itanium,
     Cygnus,
@@ -627,10 +630,25 @@ public:
     return getArch() == Triple::harp;
   }
 
+  /// Tests whether the target is Harp Simulation.
+  bool isHarpSim() const {
+    return getArch() == Triple::harpsim;
+  }
+
   /// Tests whether the target is an FPGA.
   bool isFPGA() const {
     return getArch() == Triple::smartnic ||
            getArch() == Triple::harp;
+  }
+
+  /// Tests whether the target is using Apache Spark environment.
+  bool isSparkEnvironment() const {
+    return getEnvironment() == Triple::Spark;
+  }
+
+  /// Tests whether the target is using MPI environment.
+  bool isMPIEnvironment() const {
+    return getEnvironment() == Triple::MPI;
   }
 
   /// Tests wether the target supports comdat
