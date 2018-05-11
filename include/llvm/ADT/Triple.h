@@ -79,6 +79,7 @@ public:
     smartnic,       // SmartNIC: dummy arch to map for fpga
     harp,           // Intel Harp: dummy arch to map for fpga
     harpsim,        // Intel Harp Simulation: dummy arch to map for simulation
+    awsf1,          // AWS EC2 FPGA: dummy arch to map for fpga
     xcore,          // XCore: xcore
     nvptx,          // NVPTX: 32-bit
     nvptx64,        // NVPTX: 64-bit
@@ -635,10 +636,16 @@ public:
     return getArch() == Triple::harpsim;
   }
 
+  /// Tests whether the target is AWS EC2 F1.
+  bool isAwsF1() const {
+    return getArch() == Triple::awsf1;
+  }
+
   /// Tests whether the target is an FPGA.
   bool isFPGA() const {
     return getArch() == Triple::smartnic ||
-           getArch() == Triple::harp;
+           getArch() == Triple::harp ||
+           getArch() == Triple::awsf1;
   }
 
   /// Tests whether the target is using Apache Spark environment.
