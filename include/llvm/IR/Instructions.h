@@ -39,7 +39,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-
+#include <stdio.h>
 namespace llvm {
 
 class APInt;
@@ -1439,7 +1439,6 @@ public:
     const unsigned TotalOps =
         unsigned(Args.size()) + CountBundleInputs(Bundles) + 1;
     const unsigned DescriptorBytes = Bundles.size() * sizeof(BundleOpInfo);
-
     return new (TotalOps, DescriptorBytes)
         CallInst(Ty, Func, Args, Bundles, NameStr, InsertBefore);
   }

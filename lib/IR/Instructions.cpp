@@ -262,7 +262,6 @@ void CallInst::init(FunctionType *FTy, Value *Func, ArrayRef<Value *> Args,
             FTy->getParamType(i) == Args[i]->getType()) &&
            "Calling a function with a bad signature!");
 #endif
-
   std::copy(Args.begin(), Args.end(), op_begin());
 
   auto It = populateBundleOperandInfos(Bundles, Args.size());

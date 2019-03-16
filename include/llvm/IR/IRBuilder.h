@@ -46,7 +46,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <functional>
-
+#include <stdio.h>
 namespace llvm {
 
 class APInt;
