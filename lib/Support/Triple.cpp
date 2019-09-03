@@ -55,6 +55,7 @@ StringRef Triple::getArchTypeName(ArchType Kind) {
   case harp:           return "harp";
   case harpsim:        return "harpsim";
   case awsf1:          return "awsf1";
+  case alveo:          return "alveo";
   case xcore:          return "xcore";
   case nvptx:          return "nvptx";
   case nvptx64:        return "nvptx64";
@@ -124,6 +125,7 @@ StringRef Triple::getArchTypePrefix(ArchType Kind) {
   case harp:        return "harp";
   case harpsim:     return "harpsim";
   case awsf1:       return "awsf1";
+  case alveo:       return "alveo";
 
   case xcore:       return "xcore";
 
@@ -298,6 +300,7 @@ Triple::ArchType Triple::getArchTypeForLLVMName(StringRef Name) {
     .Case("harp", harp)
     .Case("harpsim", harpsim)
     .Case("awsf1", awsf1)
+    .Case("alveo", alveo)
     .Case("xcore", xcore)
     .Case("nvptx", nvptx)
     .Case("nvptx64", nvptx64)
@@ -412,6 +415,7 @@ static Triple::ArchType parseArch(StringRef ArchName) {
     .Case("harp", Triple::harp)
     .Case("harpsim", Triple::harpsim)
     .Case("awsf1", Triple::awsf1)
+    .Case("alveo", Triple::alveo)
     .Case("sparc", Triple::sparc)
     .Case("sparcel", Triple::sparcel)
     .Cases("sparcv9", "sparc64", Triple::sparcv9)
@@ -658,6 +662,7 @@ static Triple::ObjectFormatType getDefaultFormat(const Triple &T) {
   case Triple::harp:
   case Triple::harpsim:
   case Triple::awsf1:
+  case Triple::alveo:
   case Triple::sparc:
   case Triple::sparcel:
   case Triple::sparcv9:
@@ -1221,6 +1226,7 @@ static unsigned getArchPointerBitWidth(llvm::Triple::ArchType Arch) {
   case llvm::Triple::harp:
   case llvm::Triple::harpsim:
   case llvm::Triple::awsf1:
+  case llvm::Triple::alveo:
   case llvm::Triple::sparcv9:
   case llvm::Triple::systemz:
   case llvm::Triple::opencl:
@@ -1261,6 +1267,7 @@ Triple Triple::get32BitArchVariant() const {
   case Triple::harp:
   case Triple::harpsim:
   case Triple::awsf1:
+  case Triple::alveo:
   case Triple::opencl:
   case Triple::ppc64le:
     T.setArch(UnknownArch);
@@ -1354,6 +1361,7 @@ Triple Triple::get64BitArchVariant() const {
   case Triple::harp:
   case Triple::harpsim:
   case Triple::awsf1:
+  case Triple::alveo:
   case Triple::x86_64:
   case Triple::wasm64:
   case Triple::renderscript64:
@@ -1416,6 +1424,7 @@ Triple Triple::getBigEndianArchVariant() const {
   case Triple::harp:
   case Triple::harpsim:
   case Triple::awsf1:
+  case Triple::alveo:
   case Triple::xcore:
   case Triple::renderscript32:
   case Triple::renderscript64:
@@ -1501,6 +1510,7 @@ bool Triple::isLittleEndian() const {
   case Triple::harp:
   case Triple::harpsim:
   case Triple::awsf1:
+  case Triple::alveo:
   case Triple::sparcel:
   case Triple::opencl:
   case Triple::spir64:
